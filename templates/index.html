@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>资产借用与归还管理台</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; background: #f0f2f5; color: #333; }
+  .header { background: linear-gradient(135deg, #1890ff 0%, #096dd9 100%); color: #fff; padding: 16px 32px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+  .header h1 { font-size: 22px; font-weight: 600; }
+  .header p { font-size: 13px; opacity: 0.85; margin-top: 4px; }
+  .container { padding: 24px 32px; max-width: 1600px; margin: 0 auto; }
+  .tabs { display: flex; gap: 4px; border-bottom: 2px solid #e8e8e8; margin-bottom: 24px; }
+  .tab { padding: 10px 20px; cursor: pointer; font-size: 14px; border-radius: 4px 4px 0 0; color: #666; transition: all 0.2s; }
+  .tab:hover { background: #e6f7ff; color: #1890ff; }
+  .tab.active { color: #1890ff; border-bottom: 2px solid #1890ff; margin-bottom: -2px; font-weight: 600; }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+  .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 24px; }
+  .stat-card { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+  .stat-card .label { font-size: 13px; color: #888; margin-bottom: 8px; }
+  .stat-card .value { font-size: 28px; font-weight: 700; color: #1890ff; }
+  .stat-card.overdue .value { color: #ff4d4f; }
+  .stat-card.pending .value { color: #faad14; }
+  .toolbar { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
+  .btn { padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: 500; transition: all 0.2s; }
+  .btn-primary { background: #1890ff; color: #fff; }
+  .btn-primary:hover { background: #40a9ff; }
+  .btn-success { background: #52c41a; color: #fff; }
+  .btn-success:hover { background: #73d13d; }
+  .btn-warning { background: #faad14; color: #fff; }
+  .btn-warning:hover { background: #ffc53d; }
+  .btn-danger { background: #ff4d4f; color: #fff; }
+  .btn-danger:hover { background: #ff7875; }
+  .btn-default { background: #fff; color: #333; border: 1px solid #d9d9d9; }
+  .btn-default:hover { color: #1890ff; border-color: #1890ff; }
+  .btn-sm { padding: 4px 10px; font-size: 12px; }
+  .input, .select, textarea { padding: 7px 11px; border: 1px solid #d9d9d9; border-radius: 4px; font-size: 13px; outline: none; transition: all 0.2s; }
+  .input:focus, .select:focus, textarea:focus { border-color: #1890ff; box-shadow: 0 0 0 2px rgba(24,144,255,0.2); }
+  .input { width: 200px; }
+  table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+  th, td { padding: 12px 16px; text-align: left; font-size: 13px; border-bottom: 1px solid #f0f0f0; }
+  th { background: #fafafa; font-weight: 600; color: #555; }
+  tr:hover { background: #fafafa; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 500; }
+  .badge-green { background: #f6ffed; color: #52c41a; border: 1px solid #b7eb8f; }
+  .badge-blue { background: #e6f7ff; color: #1890ff; border: 1px solid #91d5ff; }
+  .badge-red { background: #fff2f0; color: #ff4d4f; border: 1px solid #ffccc7; }
+  .badge-orange { background: #fffbe6; color: #faad14; border: 1px solid #ffe58f; }
+  .badge-gray { background: #f5f5f5; color: #8c8c8c; border: 1px solid #d9d9d9; }
+  .actions { display: flex; gap: 6px; flex-wrap: wrap; }
+  .modal-mask { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.45); z-index: 1000; align-items: center; justify-content: center; }
+  .modal-mask.show { display: flex; }
+  .modal { background: #fff; border-radius: 8px; width: 520px; max-width: 90vw; max-height: 85vh; overflow-y: auto; }
+  .modal-header { padding: 16px 24px; border-bottom: 1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: center; }
+  .modal-header h3 { font-size: 16px; }
+  .modal-close { cursor: pointer; color: #999; font-size: 20px; background: none; border: none; }
+  .modal-body { padding: 20px 24px; }
+  .modal-footer { padding: 12px 24px; border-top: 1px solid #f0f0f0; text-align: right; display: flex; gap: 8px; justify-content: flex-end; }
+  .form-group { margin-bottom: 16px; }
+  .form-group label { display: block; font-size: 13px; color: #555; margin-bottom: 6px; font-weight: 500; }
+  .form-group .input, .form-group .select, .form-group textarea { width: 100%; }
+  .alert { padding: 10px 14px; border-radius: 4px; font-size: 13px; margin-bottom: 12px; display: none; }
+  .alert-error { background: #fff2f0; color: #ff4d4f; border: 1px solid #ffccc7; display: block; }
+  .alert-success { background: #f6ffed; color: #52c41a; border: 1px solid #b7eb8f; display: block; }
+  .detail-section { margin-bottom: 20px; }
+  .detail-section h4 { font-size: 14px; margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid #f0f0f0; color: #333; }
+  .info-row { display: flex; padding: 6px 0; font-size: 13px; }
+  .info-row .label { width: 100px; color: #888; flex-shrink: 0; }
+  .info-row .value { color: #333; flex: 1; }
+  .empty { text-align: center; padding: 40px; color: #999; font-size: 13px; }
+  .history-item { padding: 10px; background: #fafafa; border-radius: 4px; margin-bottom: 8px; font-size: 12px; border-left: 3px solid #1890ff; }
+  .history-item.overdue { border-left-color: #ff4d4f; }
+  .history-item .meta { color: #888; margin-bottom: 4px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>资产借用与归还管理台</h1>
+  <p>FastAPI + SQLite 资产管理系统 | 当前用户: 系统管理员 (admin)</p>
+</div>
+
+<div class="container">
+  <div class="stats-grid" id="statsGrid"></div>
+
+  <div class="tabs">
+    <div class="tab active" data-tab="assets">资产管理</div>
+    <div class="tab" data-tab="borrow">借用记录</div>
+    <div class="tab" data-tab="requests">申请审批</div>
+  </div>
+
+  <!-- Assets Tab -->
+  <div class="tab-content active" id="tab-assets">
+    <div class="toolbar">
+      <input type="text" class="input" id="assetSearch" placeholder="搜索资产名称/编号...">
+      <select class="select" id="assetStatusFilter">
+        <option value="">全部状态</option>
+        <option value="in_stock">在库</option>
+        <option value="borrowed">借出中</option>
+        <option value="scrapped">已报废</option>
+      </select>
+      <button class="btn btn-primary" onclick="openCreateAsset()">+ 资产入库</button>
+      <button class="btn btn-success" onclick="exportLedger()">导出借用台账</button>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>资产编号</th>
+          <th>名称</th>
+          <th>分类</th>
+          <th>总数量</th>
+          <th>可用数量</th>
+          <th>状态</th>
+          <th>最近变更</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody id="assetTbody"></tbody>
+    </table>
+  </div>
+
+  <!-- Borrow Records Tab -->
+  <div class="tab-content" id="tab-borrow">
+    <div class="toolbar">
+      <select class="select" id="borrowStatusFilter">
+        <option value="">全部状态</option>
+        <option value="active">借用中</option>
+        <option value="returned">已归还</option>
+      </select>
+      <label style="font-size:13px;color:#666;"><input type="checkbox" id="overdueOnly"> 仅显示超期</label>
+      <button class="btn btn-primary" onclick="openBorrow()">+ 新建借用</button>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>资产</th>
+          <th>借用人</th>
+          <th>数量</th>
+          <th>借用时间</th>
+          <th>应归还时间</th>
+          <th>实际归还时间</th>
+          <th>状态</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody id="borrowTbody"></tbody>
+    </table>
+  </div>
+
+  <!-- Requests Tab -->
+  <div class="tab-content" id="tab-requests">
+    <div class="toolbar">
+      <select class="select" id="requestStatusFilter">
+        <option value="">全部状态</option>
+        <option value="pending">待审核</option>
+        <option value="approved">已通过</option>
+        <option value="rejected">已拒绝</option>
+      </select>
+      <select class="select" id="requestTypeFilter">
+        <option value="">全部类型</option>
+        <option value="extend">延期申请</option>
+        <option value="scrap">报废申请</option>
+      </select>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>类型</th>
+          <th>资产</th>
+          <th>申请人</th>
+          <th>延期天数</th>
+          <th>新到期日</th>
+          <th>原因</th>
+          <th>状态</th>
+          <th>申请时间</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody id="requestTbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Create Asset Modal -->
+<div class="modal-mask" id="createAssetModal">
+  <div class="modal">
+    <div class="modal-header"><h3>资产入库</h3><button class="modal-close" onclick="closeModal('createAssetModal')">&times;</button></div>
+    <div class="modal-body">
+      <div class="alert" id="createAssetAlert"></div>
+      <div class="form-group"><label>资产编号 *</label><input type="text" class="input" id="newAssetCode" placeholder="如: LT-001"></div>
+      <div class="form-group"><label>资产名称 *</label><input type="text" class="input" id="newAssetName" placeholder="如: 笔记本电脑"></div>
+      <div class="form-group"><label>分类</label><input type="text" class="input" id="newAssetCategory" placeholder="如: IT设备"></div>
+      <div class="form-group"><label>入库数量 *</label><input type="number" class="input" id="newAssetQty" value="1" min="1"></div>
+      <div class="form-group"><label>存放位置</label><input type="text" class="input" id="newAssetLocation"></div>
+      <div class="form-group"><label>备注说明</label><textarea rows="3" id="newAssetDesc"></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-default" onclick="closeModal('createAssetModal')">取消</button>
+      <button class="btn btn-primary" onclick="submitCreateAsset()">确认入库</button>
+    </div>
+  </div>
+</div>
+
+<!-- Asset Detail Modal -->
+<div class="modal-mask" id="detailModal">
+  <div class="modal" style="width: 720px;">
+    <div class="modal-header"><h3 id="detailTitle">资产详情</h3><button class="modal-close" onclick="closeModal('detailModal')">&times;</button></div>
+    <div class="modal-body" id="detailBody"></div>
+    <div class="modal-footer">
+      <button class="btn btn-default" onclick="closeModal('detailModal')">关闭</button>
+    </div>
+  </div>
+</div>
+
+<!-- Borrow Modal -->
+<div class="modal-mask" id="borrowModal">
+  <div class="modal">
+    <div class="modal-header"><h3>借出资产</h3><button class="modal-close" onclick="closeModal('borrowModal')">&times;</button></div>
+    <div class="modal-body">
+      <div class="alert" id="borrowAlert"></div>
+      <div class="form-group"><label>选择资产 *</label><select class="select" id="borrowAsset"></select></div>
+      <div class="form-group"><label>借用人 *</label><select class="select" id="borrowUser"></select></div>
+      <div class="form-group"><label>借用数量 *</label><input type="number" class="input" id="borrowQty" value="1" min="1"></div>
+      <div class="form-group"><label>预计归还日期 *</label><input type="date" class="input" id="borrowDue"></div>
+      <div class="form-group"><label>借用目的</label><textarea rows="2" id="borrowPurpose"></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-default" onclick="closeModal('borrowModal')">取消</button>
+      <button class="btn btn-primary" onclick="submitBorrow()">确认借出</button>
+    </div>
+  </div>
+</div>
+
+<!-- Extend Modal -->
+<div class="modal-mask" id="extendModal">
+  <div class="modal">
+    <div class="modal-header"><h3>申请延期</h3><button class="modal-close" onclick="closeModal('extendModal')">&times;</button></div>
+    <div class="modal-body">
+      <div class="alert" id="extendAlert"></div>
+      <input type="hidden" id="extendRecordId">
+      <input type="hidden" id="extendAssetId">
+      <div class="form-group"><label>延期天数 *</label><input type="number" class="input" id="extendDays" value="7" min="1"></div>
+      <div class="form-group"><label>延期原因 *</label><textarea rows="3" id="extendReason"></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-default" onclick="closeModal('extendModal')">取消</button>
+      <button class="btn btn-primary" onclick="submitExtend()">提交申请</button>
+    </div>
+  </div>
+</div>
+
+<!-- Scrap Modal -->
+<div class="modal-mask" id="scrapModal">
+  <div class="modal">
+    <div class="modal-header"><h3>申请报废</h3><button class="modal-close" onclick="closeModal('scrapModal')">&times;</button></div>
+    <div class="modal-body">
+      <div class="alert" id="scrapAlert"></div>
+      <input type="hidden" id="scrapAssetId">
+      <div class="form-group"><label>报废原因 *</label><textarea rows="4" id="scrapReason"></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-default" onclick="closeModal('scrapModal')">取消</button>
+      <button class="btn btn-danger" onclick="submitScrap()">提交申请</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const API = '';
+
+function fmtDate(d) {
+  if (!d) return '-';
+  const dt = new Date(d);
+  return dt.toLocaleString('zh-CN', { hour12: false });
+}
+
+function showAlert(id, msg, type = 'error') {
+  const el = document.getElementById(id);
+  el.className = 'alert alert-' + type;
+  el.textContent = msg;
+}
+
+function clearAlert(id) {
+  const el = document.getElementById(id);
+  el.className = 'alert';
+  el.textContent = '';
+}
+
+function openModal(id) { document.getElementById(id).classList.add('show'); }
+function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+
+function errMsg(err) {
+  try {
+    const d = err.responseJSON || JSON.parse(err.responseText);
+    if (d && d.detail) {
+      if (typeof d.detail === 'string') return d.detail;
+      return `[${d.detail.code || 'ERROR'}] ${d.detail.message}` + (d.detail.field ? ` (字段: ${d.detail.field})` : '');
+    }
+  } catch(e) {}
+  return err.statusText || '操作失败';
+}
+
+function ajax(method, url, data, cb) {
+  const xhr = new XMLHttpRequest();
+  let fullUrl = API + url;
+  if (method === 'GET' && data) {
+    const qs = Object.entries(data).filter(([,v])=>v!=null&&v!=='').map(([k,v])=>`${k}=${encodeURIComponent(v)}`).join('&');
+    if (qs) fullUrl += '?' + qs;
+  }
+  xhr.open(method, fullUrl);
+  xhr.setRequestHeader('Content-Type', 'application/json');
+  xhr.onload = function() {
+    if (xhr.status >= 200 && xhr.status < 300) {
+      cb(null, JSON.parse(xhr.responseText || 'null'));
+    } else {
+      cb({ status: xhr.status, statusText: xhr.statusText, responseText: xhr.responseText });
+    }
+  };
+  xhr.onerror = function() { cb({ status: 0, statusText: '网络错误' }); };
+  xhr.send(method === 'GET' ? null : JSON.stringify(data || {}));
+}
+
+// Tabs
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.onclick = function() {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('tab-' + tab.dataset.tab).classList.add('active');
+  };
+});
+
+// Stats
+function loadStats() {
+  ajax('GET', '/api/stats', null, (err, data) => {
+    if (err) return;
+    document.getElementById('statsGrid').innerHTML = `
+      <div class="stat-card"><div class="label">资产总数</div><div class="value">${data.total_assets}</div></div>
+      <div class="stat-card"><div class="label">在库资产</div><div class="value">${data.in_stock}</div></div>
+      <div class="stat-card"><div class="label">借出中</div><div class="value">${data.borrowed}</div></div>
+      <div class="stat-card"><div class="label">已报废</div><div class="value">${data.scrapped}</div></div>
+      <div class="stat-card overdue"><div class="label">超期未还</div><div class="value">${data.overdue_count}</div></div>
+      <div class="stat-card pending"><div class="label">待审核申请</div><div class="value">${data.pending_requests}</div></div>
+    `;
+  });
+}
+
+// Assets
+function statusBadge(s) {
+  const map = {
+    in_stock: ['在库', 'badge-green'],
+    borrowed: ['借出中', 'badge-blue'],
+    scrapped: ['已报废', 'badge-gray']
+  };
+  const [txt, cls] = map[s] || [s, 'badge-gray'];
+  return `<span class="badge ${cls}">${txt}</span>`;
+}
+
+let allAssets = [];
+function loadAssets() {
+  const keyword = document.getElementById('assetSearch').value;
+  const status = document.getElementById('assetStatusFilter').value;
+  ajax('GET', '/api/assets', { keyword, status }, (err, data) => {
+    if (err) { document.getElementById('assetTbody').innerHTML = '<tr><td colspan="9" class="empty">加载失败</td></tr>'; return; }
+    allAssets = data;
+    if (!data.length) { document.getElementById('assetTbody').innerHTML = '<tr><td colspan="9" class="empty">暂无资产数据</td></tr>'; return; }
+    document.getElementById('assetTbody').innerHTML = data.map(a => `
+      <tr>
+        <td>${a.id}</td>
+        <td><b>${a.asset_code}</b></td>
+        <td>${a.name}</td>
+        <td>${a.category || '-'}</td>
+        <td>${a.total_quantity}</td>
+        <td>${a.available_quantity}</td>
+        <td>${statusBadge(a.status)}</td>
+        <td style="font-size:12px;color:#888;max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${a.last_change_reason||''}">${a.last_change_reason || '-'}</td>
+        <td class="actions">
+          <button class="btn btn-sm btn-default" onclick="viewAssetDetail(${a.id})">详情</button>
+          <button class="btn btn-sm btn-primary" onclick="quickBorrow(${a.id})" ${a.status!=='in_stock'?'disabled style="opacity:0.5;cursor:not-allowed;"':''}>借出</button>
+          <button class="btn btn-sm btn-warning" onclick="openScrap(${a.id})" ${a.status==='scrapped'?'disabled style="opacity:0.5;cursor:not-allowed;"':''}>申请报废</button>
+        </td>
+      </tr>
+    `).join('');
+  });
+}
+document.getElementById('assetSearch').oninput = loadAssets;
+document.getElementById('assetStatusFilter').onchange = loadAssets;
+
+function openCreateAsset() {
+  ['newAssetCode','newAssetName','newAssetCategory','newAssetLocation','newAssetDesc'].forEach(i => document.getElementById(i).value = '');
+  document.getElementById('newAssetQty').value = 1;
+  clearAlert('createAssetAlert');
+  openModal('createAssetModal');
+}
+
+function submitCreateAsset() {
+  const data = {
+    asset_code: document.getElementById('newAssetCode').value.trim(),
+    name: document.getElementById('newAssetName').value.trim(),
+    category: document.getElementById('newAssetCategory').value.trim(),
+    total_quantity: parseInt(document.getElementById('newAssetQty').value),
+    location: document.getElementById('newAssetLocation').value.trim(),
+    description: document.getElementById('newAssetDesc').value.trim()
+  };
+  if (!data.asset_code || !data.name) { showAlert('createAssetAlert', '请填写资产编号和名称'); return; }
+  if (!data.total_quantity || data.total_quantity < 1) { showAlert('createAssetAlert', '入库数量必须大于0'); return; }
+  ajax('POST', '/api/assets', data, (err, res) => {
+    if (err) { showAlert('createAssetAlert', errMsg(err)); return; }
+    closeModal('createAssetModal');
+    loadStats(); loadAssets();
+  });
+}
+
+function viewAssetDetail(id) {
+  ajax('GET', `/api/assets/${id}`, null, (err, data) => {
+    if (err) { alert('加载失败'); return; }
+    const a = data.asset;
+    const holder = data.current_holder;
+    document.getElementById('detailTitle').textContent = `资产详情 - ${a.name}`;
+    document.getElementById('detailBody').innerHTML = `
+      <div class="detail-section">
+        <h4>基本信息</h4>
+        <div class="info-row"><span class="label">资产编号</span><span class="value"><b>${a.asset_code}</b></span></div>
+        <div class="info-row"><span class="label">名称</span><span class="value">${a.name}</span></div>
+        <div class="info-row"><span class="label">分类</span><span class="value">${a.category || '-'}</span></div>
+        <div class="info-row"><span class="label">存放位置</span><span class="value">${a.location || '-'}</span></div>
+        <div class="info-row"><span class="label">总数量</span><span class="value">${a.total_quantity}</span></div>
+        <div class="info-row"><span class="label">可用数量</span><span class="value">${a.available_quantity}</span></div>
+        <div class="info-row"><span class="label">状态</span><span class="value">${statusBadge(a.status)}</span></div>
+        <div class="info-row"><span class="label">备注</span><span class="value">${a.description || '-'}</span></div>
+      </div>
+      <div class="detail-section">
+        <h4>当前持有人</h4>
+        ${holder ? `
+          <div class="info-row"><span class="label">姓名</span><span class="value">${holder.name} (${holder.username})</span></div>
+          <div class="info-row"><span class="label">角色</span><span class="value">${holder.role === 'admin' ? '管理员' : '普通用户'}</span></div>
+        ` : '<div style="color:#888;font-size:13px;">暂无持有人 (资产在库)</div>'}
+      </div>
+      <div class="detail-section">
+        <h4>最近一次变更</h4>
+        ${data.last_change ? `
+          <div class="info-row"><span class="label">原因</span><span class="value">${data.last_change.reason}</span></div>
+          <div class="info-row"><span class="label">时间</span><span class="value">${fmtDate(data.last_change.at)}</span></div>
+        ` : '<div style="color:#888;font-size:13px;">暂无变更记录</div>'}
+      </div>
+      <div class="detail-section">
+        <h4>历史借用记录 (${data.borrow_history.length}条)</h4>
+        ${data.borrow_history.length ? data.borrow_history.map(h => `
+          <div class="history-item ${h.overdue?'overdue':''}">
+            <div class="meta">
+              <b>${h.borrower_name}</b> | 数量: ${h.quantity} | ${h.status==='active'?'借用中':'已归还'}
+              ${h.overdue?' <span class="badge badge-red">超期</span>':''}
+            </div>
+            <div>借用: ${fmtDate(h.borrow_date)} ~ 应还: ${fmtDate(h.due_date)}</div>
+            ${h.return_date ? `<div>实际归还: ${fmtDate(h.return_date)}</div>` : ''}
+            ${h.purpose ? `<div style="color:#666;margin-top:4px;">目的: ${h.purpose}</div>` : ''}
+          </div>
+        `).join('') : '<div style="color:#888;font-size:13px;">暂无借用记录</div>'}
+      </div>
+    `;
+    openModal('detailModal');
+  });
+}
+
+// Borrow records
+let allUsers = [];
+function loadUsers() {
+  ajax('GET', '/api/users', null, (err, data) => { if (!err) allUsers = data; });
+}
+
+function loadBorrow() {
+  const status = document.getElementById('borrowStatusFilter').value;
+  const overdueOnly = document.getElementById('overdueOnly').checked;
+  ajax('GET', '/api/borrow', { status, overdue_only: overdueOnly }, (err, data) => {
+    if (err) { document.getElementById('borrowTbody').innerHTML = '<tr><td colspan="9" class="empty">加载失败</td></tr>'; return; }
+    if (!data.length) { document.getElementById('borrowTbody').innerHTML = '<tr><td colspan="9" class="empty">暂无借用记录</td></tr>'; return; }
+    document.getElementById('borrowTbody').innerHTML = data.map(r => {
+      const isActive = r.status === 'active';
+      const now = new Date();
+      const due = new Date(r.due_date);
+      const overdue = isActive && due < now;
+      return `
+      <tr>
+        <td>${r.id}</td>
+        <td>${r.asset_name}</td>
+        <td>${r.borrower_name}</td>
+        <td>${r.quantity}</td>
+        <td>${fmtDate(r.borrow_date)}</td>
+        <td>${fmtDate(r.due_date)} ${overdue?'<span class="badge badge-red">超期</span>':''}</td>
+        <td>${r.return_date ? fmtDate(r.return_date) : '-'}</td>
+        <td>${isActive ? '<span class="badge badge-blue">借用中</span>' : '<span class="badge badge-green">已归还</span>'}</td>
+        <td class="actions">
+          ${isActive ? `<button class="btn btn-sm btn-success" onclick="doReturn(${r.id})">归还</button>` : ''}
+          ${isActive ? `<button class="btn btn-sm btn-warning" onclick="openExtend(${r.id}, ${r.asset_id})">申请延期</button>` : ''}
+        </td>
+      </tr>
+      `;
+    }).join('');
+  });
+}
+document.getElementById('borrowStatusFilter').onchange = loadBorrow;
+document.getElementById('overdueOnly').onchange = loadBorrow;
+
+function openBorrow() {
+  clearAlert('borrowAlert');
+  document.getElementById('borrowQty').value = 1;
+  document.getElementById('borrowPurpose').value = '';
+  const today = new Date();
+  const next = new Date(today.getTime() + 7*24*3600*1000);
+  document.getElementById('borrowDue').value = next.toISOString().slice(0,10);
+
+  ajax('GET', '/api/assets', { status: 'in_stock' }, (err, data) => {
+    if (err) return;
+    document.getElementById('borrowAsset').innerHTML = data.map(a => `<option value="${a.id}">${a.asset_code} - ${a.name} (可用${a.available_quantity})</option>`).join('');
+  });
+  ajax('GET', '/api/users', null, (err, data) => {
+    if (err) return;
+    document.getElementById('borrowUser').innerHTML = data.map(u => `<option value="${u.id}">${u.name} (${u.username})</option>`).join('');
+  });
+  openModal('borrowModal');
+}
+
+function quickBorrow(assetId) {
+  openBorrow();
+  setTimeout(() => {
+    document.getElementById('borrowAsset').value = assetId;
+  }, 200);
+}
+
+function submitBorrow() {
+  const assetId = parseInt(document.getElementById('borrowAsset').value);
+  const userId = parseInt(document.getElementById('borrowUser').value);
+  const qty = parseInt(document.getElementById('borrowQty').value);
+  const due = document.getElementById('borrowDue').value;
+  const purpose = document.getElementById('borrowPurpose').value.trim();
+  if (!assetId || !userId || !qty || !due) { showAlert('borrowAlert', '请填写完整信息'); return; }
+  const dueDate = new Date(due + 'T23:59:59');
+  ajax('POST', '/api/borrow', { asset_id: assetId, borrower_id: userId, quantity: qty, due_date: dueDate.toISOString(), purpose }, (err) => {
+    if (err) { showAlert('borrowAlert', errMsg(err)); return; }
+    closeModal('borrowModal');
+    loadStats(); loadAssets(); loadBorrow(); loadRequests();
+  });
+}
+
+function doReturn(recordId) {
+  if (!confirm('确认归还该资产?')) return;
+  ajax('POST', `/api/borrow/${recordId}/return`, null, (err) => {
+    if (err) { alert(errMsg(err)); return; }
+    loadStats(); loadAssets(); loadBorrow();
+  });
+}
+
+// Extend
+function openExtend(recordId, assetId) {
+  clearAlert('extendAlert');
+  document.getElementById('extendRecordId').value = recordId;
+  document.getElementById('extendAssetId').value = assetId;
+  document.getElementById('extendDays').value = 7;
+  document.getElementById('extendReason').value = '';
+  openModal('extendModal');
+}
+function submitExtend() {
+  const recordId = parseInt(document.getElementById('extendRecordId').value);
+  const assetId = parseInt(document.getElementById('extendAssetId').value);
+  const days = parseInt(document.getElementById('extendDays').value);
+  const reason = document.getElementById('extendReason').value.trim();
+  if (!days || days < 1) { showAlert('extendAlert', '延期天数必须大于0'); return; }
+  if (!reason) { showAlert('extendAlert', '请填写延期原因'); return; }
+  ajax('POST', '/api/requests', { request_type: 'extend', asset_id: assetId, borrow_record_id: recordId, extend_days: days, reason }, (err) => {
+    if (err) { showAlert('extendAlert', errMsg(err)); return; }
+    closeModal('extendModal');
+    loadRequests();
+  });
+}
+
+// Scrap
+function openScrap(assetId) {
+  clearAlert('scrapAlert');
+  document.getElementById('scrapAssetId').value = assetId;
+  document.getElementById('scrapReason').value = '';
+  openModal('scrapModal');
+}
+function submitScrap() {
+  const assetId = parseInt(document.getElementById('scrapAssetId').value);
+  const reason = document.getElementById('scrapReason').value.trim();
+  if (!reason) { showAlert('scrapAlert', '请填写报废原因'); return; }
+  ajax('POST', '/api/requests', { request_type: 'scrap', asset_id: assetId, reason }, (err) => {
+    if (err) { showAlert('scrapAlert', errMsg(err)); return; }
+    closeModal('scrapModal');
+    loadRequests();
+  });
+}
+
+// Requests
+function reqStatusBadge(s) {
+  const map = { pending: ['待审核','badge-orange'], approved: ['已通过','badge-green'], rejected: ['已拒绝','badge-red'] };
+  const [t, c] = map[s] || [s, 'badge-gray'];
+  return `<span class="badge ${c}">${t}</span>`;
+}
+function reqTypeBadge(t) {
+  return t === 'extend' ? '<span class="badge badge-blue">延期</span>' : '<span class="badge badge-red">报废</span>';
+}
+
+function loadRequests() {
+  const status = document.getElementById('requestStatusFilter').value;
+  const type = document.getElementById('requestTypeFilter').value;
+  ajax('GET', '/api/requests', { status, request_type: type }, (err, data) => {
+    if (err) { document.getElementById('requestTbody').innerHTML = '<tr><td colspan="10" class="empty">加载失败</td></tr>'; return; }
+    if (!data.length) { document.getElementById('requestTbody').innerHTML = '<tr><td colspan="10" class="empty">暂无申请</td></tr>'; return; }
+    document.getElementById('requestTbody').innerHTML = data.map(r => `
+      <tr>
+        <td>${r.id}</td>
+        <td>${reqTypeBadge(r.request_type)}</td>
+        <td>${r.asset_name}</td>
+        <td>${r.requester_name}</td>
+        <td>${r.extend_days || '-'}</td>
+        <td>${r.new_due_date ? fmtDate(r.new_due_date) : '-'}</td>
+        <td style="max-width:200px;font-size:12px;">${(r.reason||'').slice(0,40)}${(r.reason||'').length>40?'...':''}</td>
+        <td>${reqStatusBadge(r.status)}</td>
+        <td>${fmtDate(r.created_at)}</td>
+        <td class="actions">
+          ${r.status === 'pending' ? `<button class="btn btn-sm btn-success" onclick="approveReq(${r.id})">通过</button>` : ''}
+          ${r.status === 'pending' ? `<button class="btn btn-sm btn-danger" onclick="rejectReq(${r.id})">拒绝</button>` : ''}
+        </td>
+      </tr>
+    `).join('');
+  });
+}
+document.getElementById('requestStatusFilter').onchange = loadRequests;
+document.getElementById('requestTypeFilter').onchange = loadRequests;
+
+function approveReq(id) {
+  if (!confirm('确认通过此申请?')) return;
+  ajax('POST', `/api/requests/${id}/approve?reject_reason=`, null, (err) => {
+    if (err) { alert(errMsg(err)); return; }
+    loadStats(); loadAssets(); loadBorrow(); loadRequests();
+  });
+}
+function rejectReq(id) {
+  const reason = prompt('请输入拒绝原因:');
+  if (!reason) return;
+  ajax('POST', `/api/requests/${id}/reject?reject_reason=${encodeURIComponent(reason)}`, null, (err) => {
+    if (err) { alert(errMsg(err)); return; }
+    loadRequests();
+  });
+}
+
+// Export
+function exportLedger() {
+  window.open(API + '/api/export/ledger', '_blank');
+}
+
+// Init
+loadStats();
+loadAssets();
+loadUsers();
+loadBorrow();
+loadRequests();
+setInterval(() => { loadStats(); loadAssets(); loadBorrow(); loadRequests(); }, 30000);
+</script>
+</body>
+</html>
