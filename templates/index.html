@@ -10,19 +10,21 @@
   .header { background: linear-gradient(135deg, #1890ff 0%, #096dd9 100%); color: #fff; padding: 16px 32px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
   .header h1 { font-size: 22px; font-weight: 600; }
   .header p { font-size: 13px; opacity: 0.85; margin-top: 4px; }
-  .container { padding: 24px 32px; max-width: 1600px; margin: 0 auto; }
-  .tabs { display: flex; gap: 4px; border-bottom: 2px solid #e8e8e8; margin-bottom: 24px; }
+  .container { padding: 24px 32px; max-width: 1700px; margin: 0 auto; }
+  .tabs { display: flex; gap: 4px; border-bottom: 2px solid #e8e8e8; margin-bottom: 24px; flex-wrap: wrap; }
   .tab { padding: 10px 20px; cursor: pointer; font-size: 14px; border-radius: 4px 4px 0 0; color: #666; transition: all 0.2s; }
   .tab:hover { background: #e6f7ff; color: #1890ff; }
   .tab.active { color: #1890ff; border-bottom: 2px solid #1890ff; margin-bottom: -2px; font-weight: 600; }
   .tab-content { display: none; }
   .tab-content.active { display: block; }
-  .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 24px; }
+  .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; margin-bottom: 24px; }
   .stat-card { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
   .stat-card .label { font-size: 13px; color: #888; margin-bottom: 8px; }
   .stat-card .value { font-size: 28px; font-weight: 700; color: #1890ff; }
   .stat-card.overdue .value { color: #ff4d4f; }
   .stat-card.pending .value { color: #faad14; }
+  .stat-card.purple .value { color: #722ed1; }
+  .stat-card.green .value { color: #52c41a; }
   .toolbar { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
   .btn { padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: 500; transition: all 0.2s; }
   .btn-primary { background: #1890ff; color: #fff; }
@@ -36,11 +38,12 @@
   .btn-default { background: #fff; color: #333; border: 1px solid #d9d9d9; }
   .btn-default:hover { color: #1890ff; border-color: #1890ff; }
   .btn-sm { padding: 4px 10px; font-size: 12px; }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
   .input, .select, textarea { padding: 7px 11px; border: 1px solid #d9d9d9; border-radius: 4px; font-size: 13px; outline: none; transition: all 0.2s; }
   .input:focus, .select:focus, textarea:focus { border-color: #1890ff; box-shadow: 0 0 0 2px rgba(24,144,255,0.2); }
   .input { width: 200px; }
   table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
-  th, td { padding: 12px 16px; text-align: left; font-size: 13px; border-bottom: 1px solid #f0f0f0; }
+  th, td { padding: 12px 16px; text-align: left; font-size: 13px; border-bottom: 1px solid #f0f0f0; vertical-align: middle; }
   th { background: #fafafa; font-weight: 600; color: #555; }
   tr:hover { background: #fafafa; }
   .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 500; }
@@ -49,36 +52,45 @@
   .badge-red { background: #fff2f0; color: #ff4d4f; border: 1px solid #ffccc7; }
   .badge-orange { background: #fffbe6; color: #faad14; border: 1px solid #ffe58f; }
   .badge-gray { background: #f5f5f5; color: #8c8c8c; border: 1px solid #d9d9d9; }
+  .badge-purple { background: #f9f0ff; color: #722ed1; border: 1px solid #d3adf7; }
+  .badge-cyan { background: #e6fffb; color: #13c2c2; border: 1px solid #87e8de; }
   .actions { display: flex; gap: 6px; flex-wrap: wrap; }
   .modal-mask { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.45); z-index: 1000; align-items: center; justify-content: center; }
   .modal-mask.show { display: flex; }
   .modal { background: #fff; border-radius: 8px; width: 520px; max-width: 90vw; max-height: 85vh; overflow-y: auto; }
-  .modal-header { padding: 16px 24px; border-bottom: 1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: center; }
+  .modal.wide { width: 860px; }
+  .modal-header { padding: 16px 24px; border-bottom: 1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; background: #fff; }
   .modal-header h3 { font-size: 16px; }
   .modal-close { cursor: pointer; color: #999; font-size: 20px; background: none; border: none; }
   .modal-body { padding: 20px 24px; }
-  .modal-footer { padding: 12px 24px; border-top: 1px solid #f0f0f0; text-align: right; display: flex; gap: 8px; justify-content: flex-end; }
+  .modal-footer { padding: 12px 24px; border-top: 1px solid #f0f0f0; text-align: right; display: flex; gap: 8px; justify-content: flex-end; position: sticky; bottom: 0; background: #fff; }
   .form-group { margin-bottom: 16px; }
   .form-group label { display: block; font-size: 13px; color: #555; margin-bottom: 6px; font-weight: 500; }
   .form-group .input, .form-group .select, .form-group textarea { width: 100%; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
   .alert { padding: 10px 14px; border-radius: 4px; font-size: 13px; margin-bottom: 12px; display: none; }
   .alert-error { background: #fff2f0; color: #ff4d4f; border: 1px solid #ffccc7; display: block; }
   .alert-success { background: #f6ffed; color: #52c41a; border: 1px solid #b7eb8f; display: block; }
   .detail-section { margin-bottom: 20px; }
   .detail-section h4 { font-size: 14px; margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid #f0f0f0; color: #333; }
   .info-row { display: flex; padding: 6px 0; font-size: 13px; }
-  .info-row .label { width: 100px; color: #888; flex-shrink: 0; }
+  .info-row .label { width: 120px; color: #888; flex-shrink: 0; }
   .info-row .value { color: #333; flex: 1; }
   .empty { text-align: center; padding: 40px; color: #999; font-size: 13px; }
   .history-item { padding: 10px; background: #fafafa; border-radius: 4px; margin-bottom: 8px; font-size: 12px; border-left: 3px solid #1890ff; }
   .history-item.overdue { border-left-color: #ff4d4f; }
   .history-item .meta { color: #888; margin-bottom: 4px; }
+  .table-wrap { overflow-x: auto; }
+  .diff-input { width: 90px; padding: 4px 8px; }
+  .summary-box { background: #f0f7ff; border: 1px solid #bae0ff; padding: 12px 16px; border-radius: 6px; margin-bottom: 16px; font-size: 13px; }
+  .summary-box strong { color: #096dd9; }
+  .step-tag { display: inline-block; padding: 2px 10px; border-radius: 3px; font-size: 11px; margin-right: 6px; }
 </style>
 </head>
 <body>
 
 <div class="header">
-  <h1>资产借用与归还管理台</h1>
+  <h1>资产借用与归还管理台 (含预约·审计·盘点)</h1>
   <p>FastAPI + SQLite 资产管理系统 | 当前用户: 系统管理员 (admin)</p>
 </div>
 
@@ -88,7 +100,10 @@
   <div class="tabs">
     <div class="tab active" data-tab="assets">资产管理</div>
     <div class="tab" data-tab="borrow">借用记录</div>
+    <div class="tab" data-tab="reservations">预约队列</div>
     <div class="tab" data-tab="requests">申请审批</div>
+    <div class="tab" data-tab="audit">审计日志</div>
+    <div class="tab" data-tab="inventory">资产盘点</div>
   </div>
 
   <!-- Assets Tab -->
@@ -102,24 +117,26 @@
         <option value="scrapped">已报废</option>
       </select>
       <button class="btn btn-primary" onclick="openCreateAsset()">+ 资产入库</button>
-      <button class="btn btn-success" onclick="exportLedger()">导出借用台账</button>
+      <button class="btn btn-success" onclick="exportLedger()">导出完整台账</button>
     </div>
-    <table>
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>资产编号</th>
-          <th>名称</th>
-          <th>分类</th>
-          <th>总数量</th>
-          <th>可用数量</th>
-          <th>状态</th>
-          <th>最近变更</th>
-          <th>操作</th>
-        </tr>
-      </thead>
-      <tbody id="assetTbody"></tbody>
-    </table>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>资产编号</th>
+            <th>名称</th>
+            <th>分类</th>
+            <th>总数量</th>
+            <th>可用数量</th>
+            <th>状态</th>
+            <th>最近变更</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody id="assetTbody"></tbody>
+      </table>
+    </div>
   </div>
 
   <!-- Borrow Records Tab -->
@@ -133,22 +150,58 @@
       <label style="font-size:13px;color:#666;"><input type="checkbox" id="overdueOnly"> 仅显示超期</label>
       <button class="btn btn-primary" onclick="openBorrow()">+ 新建借用</button>
     </div>
-    <table>
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>资产</th>
-          <th>借用人</th>
-          <th>数量</th>
-          <th>借用时间</th>
-          <th>应归还时间</th>
-          <th>实际归还时间</th>
-          <th>状态</th>
-          <th>操作</th>
-        </tr>
-      </thead>
-      <tbody id="borrowTbody"></tbody>
-    </table>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>资产</th>
+            <th>借用人</th>
+            <th>数量</th>
+            <th>借用时间</th>
+            <th>应归还时间</th>
+            <th>实际归还时间</th>
+            <th>状态</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody id="borrowTbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Reservations Tab -->
+  <div class="tab-content" id="tab-reservations">
+    <div class="toolbar">
+      <select class="select" id="resStatusFilter">
+        <option value="">全部状态</option>
+        <option value="queued">排队中</option>
+        <option value="pending_confirm">待确认</option>
+        <option value="confirmed">已确认</option>
+        <option value="borrowed">已借出</option>
+        <option value="cancelled">已取消</option>
+        <option value="timeout_released">超时释放</option>
+      </select>
+      <button class="btn btn-primary" onclick="openReservation()">+ 新建预约</button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>资产</th>
+            <th>预约人</th>
+            <th>数量</th>
+            <th>排队位置</th>
+            <th>状态</th>
+            <th>创建时间</th>
+            <th>确认截止</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody id="reservationTbody"></tbody>
+      </table>
+    </div>
   </div>
 
   <!-- Requests Tab -->
@@ -166,23 +219,97 @@
         <option value="scrap">报废申请</option>
       </select>
     </div>
-    <table>
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>类型</th>
-          <th>资产</th>
-          <th>申请人</th>
-          <th>延期天数</th>
-          <th>新到期日</th>
-          <th>原因</th>
-          <th>状态</th>
-          <th>申请时间</th>
-          <th>操作</th>
-        </tr>
-      </thead>
-      <tbody id="requestTbody"></tbody>
-    </table>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>类型</th>
+            <th>资产</th>
+            <th>申请人</th>
+            <th>延期天数</th>
+            <th>新到期日</th>
+            <th>原因</th>
+            <th>状态</th>
+            <th>申请时间</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody id="requestTbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Audit Log Tab -->
+  <div class="tab-content" id="tab-audit">
+    <div class="toolbar">
+      <select class="select" id="auditActionFilter">
+        <option value="">全部操作</option>
+        <option value="borrow">借出</option>
+        <option value="return">归还</option>
+        <option value="extend_approve">延期通过</option>
+        <option value="extend_reject">延期拒绝</option>
+        <option value="scrap_approve">报废通过</option>
+        <option value="scrap_reject">报废拒绝</option>
+        <option value="reservation_create">创建预约</option>
+        <option value="reservation_confirm">预约确认</option>
+        <option value="reservation_cancel">预约取消</option>
+        <option value="reservation_timeout">预约超时</option>
+        <option value="restock">补充入库</option>
+        <option value="asset_create">新增资产</option>
+      </select>
+      <span style="color:#888;font-size:13px;">最近 500 条</span>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>操作类型</th>
+            <th>操作人</th>
+            <th>资产</th>
+            <th>关联单据</th>
+            <th>前状态/后状态</th>
+            <th>前数/后数</th>
+            <th>变更原因</th>
+            <th>时间</th>
+          </tr>
+        </thead>
+        <tbody id="auditTbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Inventory Tab -->
+  <div class="tab-content" id="tab-inventory">
+    <div class="toolbar">
+      <select class="select" id="invStatusFilter">
+        <option value="">全部状态</option>
+        <option value="draft">草稿</option>
+        <option value="in_progress">进行中</option>
+        <option value="completed">已完成</option>
+      </select>
+      <button class="btn btn-primary" onclick="openCreateInventory()">+ 新建盘点批次</button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>批次号</th>
+            <th>名称</th>
+            <th>操作人</th>
+            <th>资产数</th>
+            <th>账面/实盘/借出</th>
+            <th>差异</th>
+            <th>状态</th>
+            <th>创建时间</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody id="inventoryTbody"></tbody>
+      </table>
+    </div>
   </div>
 </div>
 
@@ -194,8 +321,10 @@
       <div class="alert" id="createAssetAlert"></div>
       <div class="form-group"><label>资产编号 *</label><input type="text" class="input" id="newAssetCode" placeholder="如: LT-001"></div>
       <div class="form-group"><label>资产名称 *</label><input type="text" class="input" id="newAssetName" placeholder="如: 笔记本电脑"></div>
-      <div class="form-group"><label>分类</label><input type="text" class="input" id="newAssetCategory" placeholder="如: IT设备"></div>
-      <div class="form-group"><label>入库数量 *</label><input type="number" class="input" id="newAssetQty" value="1" min="1"></div>
+      <div class="form-row">
+        <div class="form-group"><label>分类</label><input type="text" class="input" id="newAssetCategory" placeholder="如: IT设备"></div>
+        <div class="form-group"><label>入库数量 *</label><input type="number" class="input" id="newAssetQty" value="1" min="1"></div>
+      </div>
       <div class="form-group"><label>存放位置</label><input type="text" class="input" id="newAssetLocation"></div>
       <div class="form-group"><label>备注说明</label><textarea rows="3" id="newAssetDesc"></textarea></div>
     </div>
@@ -208,7 +337,7 @@
 
 <!-- Asset Detail Modal -->
 <div class="modal-mask" id="detailModal">
-  <div class="modal" style="width: 720px;">
+  <div class="modal wide">
     <div class="modal-header"><h3 id="detailTitle">资产详情</h3><button class="modal-close" onclick="closeModal('detailModal')">&times;</button></div>
     <div class="modal-body" id="detailBody"></div>
     <div class="modal-footer">
@@ -225,8 +354,11 @@
       <div class="alert" id="borrowAlert"></div>
       <div class="form-group"><label>选择资产 *</label><select class="select" id="borrowAsset"></select></div>
       <div class="form-group"><label>借用人 *</label><select class="select" id="borrowUser"></select></div>
-      <div class="form-group"><label>借用数量 *</label><input type="number" class="input" id="borrowQty" value="1" min="1"></div>
-      <div class="form-group"><label>预计归还日期 *</label><input type="date" class="input" id="borrowDue"></div>
+      <div class="form-row">
+        <div class="form-group"><label>借用数量 *</label><input type="number" class="input" id="borrowQty" value="1" min="1"></div>
+        <div class="form-group"><label>预计归还日期 *</label><input type="date" class="input" id="borrowDue"></div>
+      </div>
+      <div class="form-group" style="display:none;" id="borrowResGroup"><label>关联预约ID (可选)</label><input type="number" class="input" id="borrowResId" placeholder="已确认预约可直接借出"></div>
       <div class="form-group"><label>借用目的</label><textarea rows="2" id="borrowPurpose"></textarea></div>
     </div>
     <div class="modal-footer">
@@ -270,8 +402,103 @@
   </div>
 </div>
 
+<!-- Reservation Modal -->
+<div class="modal-mask" id="reservationModal">
+  <div class="modal">
+    <div class="modal-header"><h3>新建预约</h3><button class="modal-close" onclick="closeModal('reservationModal')">&times;</button></div>
+    <div class="modal-body">
+      <div class="alert" id="reservationAlert"></div>
+      <div class="form-group"><label>选择资产 *</label><select class="select" id="resAsset"></select></div>
+      <div class="form-group"><label>预约人 *</label><select class="select" id="resUser"></select></div>
+      <div class="form-row">
+        <div class="form-group"><label>预约数量 *</label><input type="number" class="input" id="resQty" value="1" min="1"></div>
+        <div class="form-group"><label>期望使用日期</label><input type="date" class="input" id="resDate"></div>
+      </div>
+      <div class="form-group"><label>预约说明</label><textarea rows="2" id="resPurpose"></textarea></div>
+      <div class="summary-box" id="resSummary" style="display:none;"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-default" onclick="closeModal('reservationModal')">取消</button>
+      <button class="btn btn-primary" onclick="submitReservation()">提交预约</button>
+    </div>
+  </div>
+</div>
+
+<!-- Restock Modal -->
+<div class="modal-mask" id="restockModal">
+  <div class="modal">
+    <div class="modal-header"><h3>补充入库</h3><button class="modal-close" onclick="closeModal('restockModal')">&times;</button></div>
+    <div class="modal-body">
+      <div class="alert" id="restockAlert"></div>
+      <input type="hidden" id="restockAssetId">
+      <div class="summary-box" id="restockInfo"></div>
+      <div class="form-group"><label>入库数量 *</label><input type="number" class="input" id="restockQty" value="1" min="1"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-default" onclick="closeModal('restockModal')">取消</button>
+      <button class="btn btn-success" onclick="submitRestock()">确认入库</button>
+    </div>
+  </div>
+</div>
+
+<!-- Create Inventory Modal -->
+<div class="modal-mask" id="createInvModal">
+  <div class="modal">
+    <div class="modal-header"><h3>新建盘点批次</h3><button class="modal-close" onclick="closeModal('createInvModal')">&times;</button></div>
+    <div class="modal-body">
+      <div class="alert" id="createInvAlert"></div>
+      <div class="form-group"><label>盘点批次名称 *</label><input type="text" class="input" id="invName" placeholder="如: 2026年Q2季度盘点"></div>
+      <div class="form-group"><label>备注说明</label><textarea rows="3" id="invRemark"></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-default" onclick="closeModal('createInvModal')">取消</button>
+      <button class="btn btn-primary" onclick="submitCreateInventory()">创建盘点</button>
+    </div>
+  </div>
+</div>
+
+<!-- Inventory Detail Modal -->
+<div class="modal-mask" id="inventoryDetailModal">
+  <div class="modal wide">
+    <div class="modal-header">
+      <h3 id="invDetailTitle">盘点明细</h3>
+      <button class="modal-close" onclick="closeModal('inventoryDetailModal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="summary-box" id="invSummary"></div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>资产编号</th>
+              <th>名称</th>
+              <th>账面数</th>
+              <th>借出占用</th>
+              <th>应在库</th>
+              <th>实盘数 *</th>
+              <th>差异</th>
+              <th>差异类型</th>
+              <th>差异原因</th>
+              <th>处理结果</th>
+            </tr>
+          </thead>
+          <tbody id="invItemTbody"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-default" onclick="closeModal('inventoryDetailModal')">关闭</button>
+      <button class="btn btn-warning" id="invStartBtn" style="display:none;" onclick="startInventory()">启动盘点</button>
+      <button class="btn btn-success" id="invCompleteBtn" style="display:none;" onclick="completeInventory()">完成盘点</button>
+    </div>
+  </div>
+</div>
+
 <script>
 const API = '';
+let CURRENT_INV_ID = null;
+let INV_ITEMS_CACHE = [];
 
 function fmtDate(d) {
   if (!d) return '-';
@@ -284,19 +511,17 @@ function showAlert(id, msg, type = 'error') {
   el.className = 'alert alert-' + type;
   el.textContent = msg;
 }
-
 function clearAlert(id) {
   const el = document.getElementById(id);
   el.className = 'alert';
   el.textContent = '';
 }
-
 function openModal(id) { document.getElementById(id).classList.add('show'); }
 function closeModal(id) { document.getElementById(id).classList.remove('show'); }
 
 function errMsg(err) {
   try {
-    const d = err.responseJSON || JSON.parse(err.responseText);
+    const d = JSON.parse(err.responseText);
     if (d && d.detail) {
       if (typeof d.detail === 'string') return d.detail;
       return `[${d.detail.code || 'ERROR'}] ${d.detail.message}` + (d.detail.field ? ` (字段: ${d.detail.field})` : '');
@@ -332,6 +557,11 @@ document.querySelectorAll('.tab').forEach(tab => {
     document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
     tab.classList.add('active');
     document.getElementById('tab-' + tab.dataset.tab).classList.add('active');
+    const map = {
+      assets: loadAssets, borrow: loadBorrow, reservations: loadReservations,
+      requests: loadRequests, audit: loadAuditLogs, inventory: loadInventory
+    };
+    if (map[tab.dataset.tab]) map[tab.dataset.tab]();
   };
 });
 
@@ -341,11 +571,15 @@ function loadStats() {
     if (err) return;
     document.getElementById('statsGrid').innerHTML = `
       <div class="stat-card"><div class="label">资产总数</div><div class="value">${data.total_assets}</div></div>
-      <div class="stat-card"><div class="label">在库资产</div><div class="value">${data.in_stock}</div></div>
+      <div class="stat-card green"><div class="label">在库资产</div><div class="value">${data.in_stock}</div></div>
       <div class="stat-card"><div class="label">借出中</div><div class="value">${data.borrowed}</div></div>
       <div class="stat-card"><div class="label">已报废</div><div class="value">${data.scrapped}</div></div>
       <div class="stat-card overdue"><div class="label">超期未还</div><div class="value">${data.overdue_count}</div></div>
       <div class="stat-card pending"><div class="label">待审核申请</div><div class="value">${data.pending_requests}</div></div>
+      <div class="stat-card purple"><div class="label">排队中预约</div><div class="value">${data.queued_reservations}</div></div>
+      <div class="stat-card pending"><div class="label">待确认预约</div><div class="value">${data.pending_confirm}</div></div>
+      <div class="stat-card green"><div class="label">审计日志数</div><div class="value">${data.total_audit_logs}</div></div>
+      <div class="stat-card purple"><div class="label">待完成盘点</div><div class="value">${data.pending_inventories}</div></div>
     `;
   });
 }
@@ -376,13 +610,15 @@ function loadAssets() {
         <td>${a.name}</td>
         <td>${a.category || '-'}</td>
         <td>${a.total_quantity}</td>
-        <td>${a.available_quantity}</td>
+        <td><b>${a.available_quantity}</b></td>
         <td>${statusBadge(a.status)}</td>
-        <td style="font-size:12px;color:#888;max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${a.last_change_reason||''}">${a.last_change_reason || '-'}</td>
+        <td style="font-size:12px;color:#888;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${a.last_change_reason||''}">${a.last_change_reason || '-'}</td>
         <td class="actions">
           <button class="btn btn-sm btn-default" onclick="viewAssetDetail(${a.id})">详情</button>
-          <button class="btn btn-sm btn-primary" onclick="quickBorrow(${a.id})" ${a.status!=='in_stock'?'disabled style="opacity:0.5;cursor:not-allowed;"':''}>借出</button>
-          <button class="btn btn-sm btn-warning" onclick="openScrap(${a.id})" ${a.status==='scrapped'?'disabled style="opacity:0.5;cursor:not-allowed;"':''}>申请报废</button>
+          <button class="btn btn-sm btn-primary" onclick="quickBorrow(${a.id})" ${a.status!=='in_stock'?'disabled':''}>借出</button>
+          <button class="btn btn-sm btn-warning" onclick="openReservationForAsset(${a.id})" ${a.status==='scrapped'?'disabled':''}>预约</button>
+          <button class="btn btn-sm btn-success" onclick="openRestock(${a.id})" ${a.status==='scrapped'?'disabled':''}>入库</button>
+          <button class="btn btn-sm btn-danger" onclick="openScrap(${a.id})" ${a.status==='scrapped'?'disabled':''}>申请报废</button>
         </td>
       </tr>
     `).join('');
@@ -397,7 +633,6 @@ function openCreateAsset() {
   clearAlert('createAssetAlert');
   openModal('createAssetModal');
 }
-
 function submitCreateAsset() {
   const data = {
     asset_code: document.getElementById('newAssetCode').value.trim(),
@@ -409,10 +644,32 @@ function submitCreateAsset() {
   };
   if (!data.asset_code || !data.name) { showAlert('createAssetAlert', '请填写资产编号和名称'); return; }
   if (!data.total_quantity || data.total_quantity < 1) { showAlert('createAssetAlert', '入库数量必须大于0'); return; }
-  ajax('POST', '/api/assets', data, (err, res) => {
+  ajax('POST', '/api/assets', data, (err) => {
     if (err) { showAlert('createAssetAlert', errMsg(err)); return; }
-    closeModal('createAssetModal');
-    loadStats(); loadAssets();
+    closeModal('createAssetModal'); reloadAll();
+  });
+}
+
+function openRestock(assetId) {
+  const a = allAssets.find(x => x.id === assetId);
+  if (!a) return;
+  document.getElementById('restockAssetId').value = assetId;
+  document.getElementById('restockQty').value = 1;
+  document.getElementById('restockInfo').innerHTML = `
+    <div class="info-row"><span class="label">资产编号</span><span class="value"><strong>${a.asset_code}</strong></span></div>
+    <div class="info-row"><span class="label">名称</span><span class="value">${a.name}</span></div>
+    <div class="info-row"><span class="label">当前库存</span><span class="value">总 ${a.total_quantity} 件 / 可用 ${a.available_quantity} 件</span></div>
+  `;
+  clearAlert('restockAlert');
+  openModal('restockModal');
+}
+function submitRestock() {
+  const id = parseInt(document.getElementById('restockAssetId').value);
+  const qty = parseInt(document.getElementById('restockQty').value);
+  if (!qty || qty <= 0) { showAlert('restockAlert', '入库数量必须大于0'); return; }
+  ajax('PUT', `/api/assets/${id}/restock?quantity=${qty}`, null, (err) => {
+    if (err) { showAlert('restockAlert', errMsg(err)); return; }
+    closeModal('restockModal'); reloadAll();
   });
 }
 
@@ -430,7 +687,7 @@ function viewAssetDetail(id) {
         <div class="info-row"><span class="label">分类</span><span class="value">${a.category || '-'}</span></div>
         <div class="info-row"><span class="label">存放位置</span><span class="value">${a.location || '-'}</span></div>
         <div class="info-row"><span class="label">总数量</span><span class="value">${a.total_quantity}</span></div>
-        <div class="info-row"><span class="label">可用数量</span><span class="value">${a.available_quantity}</span></div>
+        <div class="info-row"><span class="label">可用数量</span><span class="value"><strong style="color:#1890ff;">${a.available_quantity}</strong></span></div>
         <div class="info-row"><span class="label">状态</span><span class="value">${statusBadge(a.status)}</span></div>
         <div class="info-row"><span class="label">备注</span><span class="value">${a.description || '-'}</span></div>
       </div>
@@ -510,48 +767,50 @@ function openBorrow() {
   clearAlert('borrowAlert');
   document.getElementById('borrowQty').value = 1;
   document.getElementById('borrowPurpose').value = '';
+  document.getElementById('borrowResId').value = '';
   const today = new Date();
   const next = new Date(today.getTime() + 7*24*3600*1000);
   document.getElementById('borrowDue').value = next.toISOString().slice(0,10);
 
-  ajax('GET', '/api/assets', { status: 'in_stock' }, (err, data) => {
+  ajax('GET', '/api/assets', { status: '' }, (err, data) => {
     if (err) return;
-    document.getElementById('borrowAsset').innerHTML = data.map(a => `<option value="${a.id}">${a.asset_code} - ${a.name} (可用${a.available_quantity})</option>`).join('');
+    document.getElementById('borrowAsset').innerHTML = data
+      .filter(a => a.status !== 'scrapped')
+      .map(a => `<option value="${a.id}">${a.asset_code} - ${a.name} (可用${a.available_quantity}件/总${a.total_quantity}件)</option>`).join('');
   });
   ajax('GET', '/api/users', null, (err, data) => {
     if (err) return;
     document.getElementById('borrowUser').innerHTML = data.map(u => `<option value="${u.id}">${u.name} (${u.username})</option>`).join('');
   });
+  document.getElementById('borrowResGroup').style.display = 'block';
   openModal('borrowModal');
 }
-
 function quickBorrow(assetId) {
   openBorrow();
-  setTimeout(() => {
-    document.getElementById('borrowAsset').value = assetId;
-  }, 200);
+  setTimeout(() => { document.getElementById('borrowAsset').value = assetId; }, 200);
 }
-
 function submitBorrow() {
   const assetId = parseInt(document.getElementById('borrowAsset').value);
   const userId = parseInt(document.getElementById('borrowUser').value);
   const qty = parseInt(document.getElementById('borrowQty').value);
   const due = document.getElementById('borrowDue').value;
   const purpose = document.getElementById('borrowPurpose').value.trim();
+  const resIdRaw = document.getElementById('borrowResId').value;
+  const reservationId = resIdRaw ? parseInt(resIdRaw) : null;
   if (!assetId || !userId || !qty || !due) { showAlert('borrowAlert', '请填写完整信息'); return; }
   const dueDate = new Date(due + 'T23:59:59');
-  ajax('POST', '/api/borrow', { asset_id: assetId, borrower_id: userId, quantity: qty, due_date: dueDate.toISOString(), purpose }, (err) => {
+  const payload = { asset_id: assetId, borrower_id: userId, quantity: qty, due_date: dueDate.toISOString(), purpose };
+  if (reservationId) payload.reservation_id = reservationId;
+  ajax('POST', '/api/borrow', payload, (err) => {
     if (err) { showAlert('borrowAlert', errMsg(err)); return; }
-    closeModal('borrowModal');
-    loadStats(); loadAssets(); loadBorrow(); loadRequests();
+    closeModal('borrowModal'); reloadAll();
   });
 }
-
 function doReturn(recordId) {
   if (!confirm('确认归还该资产?')) return;
   ajax('POST', `/api/borrow/${recordId}/return`, null, (err) => {
     if (err) { alert(errMsg(err)); return; }
-    loadStats(); loadAssets(); loadBorrow();
+    reloadAll();
   });
 }
 
@@ -573,8 +832,7 @@ function submitExtend() {
   if (!reason) { showAlert('extendAlert', '请填写延期原因'); return; }
   ajax('POST', '/api/requests', { request_type: 'extend', asset_id: assetId, borrow_record_id: recordId, extend_days: days, reason }, (err) => {
     if (err) { showAlert('extendAlert', errMsg(err)); return; }
-    closeModal('extendModal');
-    loadRequests();
+    closeModal('extendModal'); loadRequests();
   });
 }
 
@@ -591,8 +849,123 @@ function submitScrap() {
   if (!reason) { showAlert('scrapAlert', '请填写报废原因'); return; }
   ajax('POST', '/api/requests', { request_type: 'scrap', asset_id: assetId, reason }, (err) => {
     if (err) { showAlert('scrapAlert', errMsg(err)); return; }
-    closeModal('scrapModal');
-    loadRequests();
+    closeModal('scrapModal'); loadRequests();
+  });
+}
+
+// Reservations
+function resStatusBadge(s) {
+  const map = {
+    queued: ['排队中', 'badge-orange'],
+    pending_confirm: ['待确认', 'badge-blue'],
+    confirmed: ['已确认', 'badge-green'],
+    borrowed: ['已借出', 'badge-gray'],
+    cancelled: ['已取消', 'badge-gray'],
+    timeout_released: ['超时释放', 'badge-red']
+  };
+  const [t, c] = map[s] || [s, 'badge-gray'];
+  return `<span class="badge ${c}">${t}</span>`;
+}
+
+function loadReservations() {
+  const status = document.getElementById('resStatusFilter').value;
+  ajax('GET', '/api/reservations', { status }, (err, data) => {
+    if (err) { document.getElementById('reservationTbody').innerHTML = '<tr><td colspan="9" class="empty">加载失败</td></tr>'; return; }
+    if (!data.length) { document.getElementById('reservationTbody').innerHTML = '<tr><td colspan="9" class="empty">暂无预约记录</td></tr>'; return; }
+    document.getElementById('reservationTbody').innerHTML = data.map(r => `
+      <tr>
+        <td>#${r.id}</td>
+        <td><b>${r.asset_code}</b> ${r.asset_name}</td>
+        <td>${r.requester_name}</td>
+        <td>${r.quantity}</td>
+        <td>${r.queue_position ? '第'+r.queue_position+'位' : '-'}</td>
+        <td>${resStatusBadge(r.status)}</td>
+        <td>${fmtDate(r.created_at)}</td>
+        <td>${r.confirm_deadline ? (new Date(r.confirm_deadline)<new Date()?'<span style="color:#ff4d4f;">'+fmtDate(r.confirm_deadline)+' (已过)</span>':fmtDate(r.confirm_deadline)) : '-'}</td>
+        <td class="actions">
+          ${r.status==='queued' || r.status==='pending_confirm' ? `<button class="btn btn-sm btn-success" onclick="confirmReservation(${r.id})">确认</button>` : ''}
+          ${['queued','pending_confirm','confirmed'].includes(r.status) ? `<button class="btn btn-sm btn-danger" onclick="cancelReservation(${r.id})">取消</button>` : ''}
+        </td>
+      </tr>
+    `).join('');
+  });
+}
+document.getElementById('resStatusFilter').onchange = loadReservations;
+
+function openReservation() {
+  clearAlert('reservationAlert');
+  document.getElementById('resQty').value = 1;
+  document.getElementById('resPurpose').value = '';
+  document.getElementById('resDate').value = '';
+  document.getElementById('resSummary').style.display = 'none';
+  ajax('GET', '/api/assets', { status: '' }, (err, data) => {
+    if (err) return;
+    const opts = data.filter(a => a.status !== 'scrapped').map(a => {
+      const tip = a.available_quantity > 0
+        ? ` (可用${a.available_quantity}件, 可立即预约确认)`
+        : ` (当前无库存, 需排队)`;
+      return `<option value="${a.id}" data-qty="${a.available_quantity}">${a.asset_code} - ${a.name}${tip}</option>`;
+    }).join('');
+    document.getElementById('resAsset').innerHTML = opts;
+    updateResSummary();
+  });
+  ajax('GET', '/api/users', null, (err, data) => {
+    if (err) return;
+    document.getElementById('resUser').innerHTML = data.map(u => `<option value="${u.id}">${u.name} (${u.username})</option>`).join('');
+  });
+  openModal('reservationModal');
+}
+function openReservationForAsset(assetId) {
+  openReservation();
+  setTimeout(() => { document.getElementById('resAsset').value = assetId; updateResSummary(); }, 200);
+}
+document.addEventListener('change', (e) => {
+  if (e.target && (e.target.id === 'resAsset' || e.target.id === 'resQty')) updateResSummary();
+});
+function updateResSummary() {
+  const sel = document.getElementById('resAsset');
+  if (!sel) return;
+  const opt = sel.options[sel.selectedIndex];
+  if (!opt) return;
+  const avail = parseInt(opt.dataset.qty) || 0;
+  const qty = parseInt(document.getElementById('resQty').value) || 1;
+  const sb = document.getElementById('resSummary');
+  if (avail >= qty) {
+    sb.style.display = 'block';
+    sb.innerHTML = `<span class="badge badge-green">✓ 有库存</span> 当前可用 ${avail} 件 ≥ 预约 ${qty} 件, 提交后可直接进入确认或排队。`;
+  } else {
+    sb.style.display = 'block';
+    sb.innerHTML = `<span class="badge badge-orange">⚠ 无库存需排队</span> 当前可用 ${avail} 件 < 预约 ${qty} 件, 提交后进入预约队列, 资产归还/入库后自动通知。`;
+  }
+}
+function submitReservation() {
+  const assetId = parseInt(document.getElementById('resAsset').value);
+  const userId = parseInt(document.getElementById('resUser').value);
+  const qty = parseInt(document.getElementById('resQty').value);
+  const dateVal = document.getElementById('resDate').value;
+  const purpose = document.getElementById('resPurpose').value.trim();
+  const payload = { asset_id: assetId, requester_id: userId, quantity: qty, purpose };
+  if (dateVal) {
+    const d = new Date(dateVal + 'T09:00:00');
+    payload.expected_date = d.toISOString();
+  }
+  ajax('POST', '/api/reservations', payload, (err) => {
+    if (err) { showAlert('reservationAlert', errMsg(err)); return; }
+    closeModal('reservationModal'); reloadAll();
+  });
+}
+function confirmReservation(id) {
+  if (!confirm('确认此预约? 确认后资产将为您预留, 请尽快完成借出。')) return;
+  ajax('POST', `/api/reservations/${id}/confirm`, null, (err) => {
+    if (err) { alert(errMsg(err)); return; }
+    reloadAll();
+  });
+}
+function cancelReservation(id) {
+  if (!confirm('确认取消此预约?')) return;
+  ajax('POST', `/api/reservations/${id}/cancel`, null, (err) => {
+    if (err) { alert(errMsg(err)); return; }
+    reloadAll();
   });
 }
 
@@ -605,7 +978,6 @@ function reqStatusBadge(s) {
 function reqTypeBadge(t) {
   return t === 'extend' ? '<span class="badge badge-blue">延期</span>' : '<span class="badge badge-red">报废</span>';
 }
-
 function loadRequests() {
   const status = document.getElementById('requestStatusFilter').value;
   const type = document.getElementById('requestTypeFilter').value;
@@ -633,12 +1005,11 @@ function loadRequests() {
 }
 document.getElementById('requestStatusFilter').onchange = loadRequests;
 document.getElementById('requestTypeFilter').onchange = loadRequests;
-
 function approveReq(id) {
   if (!confirm('确认通过此申请?')) return;
-  ajax('POST', `/api/requests/${id}/approve?reject_reason=`, null, (err) => {
+  ajax('POST', `/api/requests/${id}/approve`, null, (err) => {
     if (err) { alert(errMsg(err)); return; }
-    loadStats(); loadAssets(); loadBorrow(); loadRequests();
+    reloadAll();
   });
 }
 function rejectReq(id) {
@@ -650,9 +1021,200 @@ function rejectReq(id) {
   });
 }
 
+// Audit logs
+function auditActionBadge(a) {
+  const cls = a.includes('scrap') || a.includes('reject') || a.includes('cancel') || a.includes('timeout') ? 'badge-red'
+    : a.includes('return') || a.includes('approve') || a.includes('confirm') ? 'badge-green'
+    : a.includes('reservation') ? 'badge-purple'
+    : a.includes('restock') || a.includes('create') ? 'badge-cyan'
+    : 'badge-blue';
+  const map = {
+    borrow: '借出', return: '归还',
+    extend_approve: '延期通过', extend_reject: '延期拒绝',
+    scrap_approve: '报废通过', scrap_reject: '报废拒绝',
+    reservation_create: '创建预约', reservation_confirm: '预约确认',
+    reservation_cancel: '预约取消', reservation_timeout: '预约超时',
+    restock: '补充入库', asset_create: '新增资产'
+  };
+  return `<span class="badge ${cls}">${map[a] || a}</span>`;
+}
+function loadAuditLogs() {
+  const action = document.getElementById('auditActionFilter').value;
+  ajax('GET', '/api/audit-logs', { action, limit: 500 }, (err, data) => {
+    if (err) { document.getElementById('auditTbody').innerHTML = '<tr><td colspan="9" class="empty">加载失败</td></tr>'; return; }
+    if (!data.length) { document.getElementById('auditTbody').innerHTML = '<tr><td colspan="9" class="empty">暂无审计日志</td></tr>'; return; }
+    document.getElementById('auditTbody').innerHTML = data.map(l => `
+      <tr>
+        <td>#${l.id}</td>
+        <td>${auditActionBadge(l.action)}</td>
+        <td>${l.operator_name}</td>
+        <td style="font-size:12px;">${l.asset_name || '-'}</td>
+        <td style="font-size:12px;color:#666;">${l.related_doc || '-'}</td>
+        <td style="font-size:12px;">${l.status_before||'-'} → ${l.status_after||'-'}</td>
+        <td style="font-size:12px;">${l.qty_before!=null?l.qty_before:'-'} → ${l.qty_after!=null?l.qty_after:'-'}</td>
+        <td style="font-size:12px;max-width:220px;" title="${l.reason||''}">${(l.reason||'-').slice(0,50)}${(l.reason||'').length>50?'...':''}</td>
+        <td style="font-size:12px;color:#888;">${fmtDate(l.created_at)}</td>
+      </tr>
+    `).join('');
+  });
+}
+document.getElementById('auditActionFilter').onchange = loadAuditLogs;
+
+// Inventory
+function invStatusBadge(s) {
+  const map = { draft: ['草稿','badge-gray'], in_progress: ['进行中','badge-blue'], completed: ['已完成','badge-green'] };
+  const [t, c] = map[s] || [s, 'badge-gray'];
+  return `<span class="badge ${c}">${t}</span>`;
+}
+function loadInventory() {
+  const status = document.getElementById('invStatusFilter').value;
+  ajax('GET', '/api/inventory', { status }, (err, data) => {
+    if (err) { document.getElementById('inventoryTbody').innerHTML = '<tr><td colspan="10" class="empty">加载失败</td></tr>'; return; }
+    if (!data.length) { document.getElementById('inventoryTbody').innerHTML = '<tr><td colspan="10" class="empty">暂无盘点批次</td></tr>'; return; }
+    document.getElementById('inventoryTbody').innerHTML = data.map(b => `
+      <tr>
+        <td>#${b.id}</td>
+        <td><b>${b.batch_no}</b></td>
+        <td>${b.name}</td>
+        <td>${b.operator_name || '-'}</td>
+        <td>${b.total_assets}</td>
+        <td style="font-size:12px;">
+          <span style="color:#1890ff;">账面 ${b.total_qty_book}</span> /
+          <span style="color:#52c41a;">实盘 ${b.total_qty_actual}</span> /
+          <span style="color:#722ed1;">借出 ${b.total_qty_borrowed}</span>
+        </td>
+        <td><b style="color:${b.total_diff === 0 ? '#52c41a' : '#ff4d4f'};">${b.total_diff > 0 ? '+' : ''}${b.total_diff}</b></td>
+        <td>${invStatusBadge(b.status)}</td>
+        <td style="font-size:12px;">${fmtDate(b.created_at)}</td>
+        <td class="actions">
+          <button class="btn btn-sm btn-default" onclick="viewInventoryDetail(${b.id})">查看/录入</button>
+        </td>
+      </tr>
+    `).join('');
+  });
+}
+document.getElementById('invStatusFilter').onchange = loadInventory;
+
+function openCreateInventory() {
+  clearAlert('createInvAlert');
+  document.getElementById('invName').value = '';
+  document.getElementById('invRemark').value = '';
+  openModal('createInvModal');
+}
+function submitCreateInventory() {
+  const name = document.getElementById('invName').value.trim();
+  const remark = document.getElementById('invRemark').value.trim();
+  if (!name) { showAlert('createInvAlert', '请填写盘点批次名称'); return; }
+  ajax('POST', '/api/inventory', { name, remark }, (err) => {
+    if (err) { showAlert('createInvAlert', errMsg(err)); return; }
+    closeModal('createInvModal'); loadInventory(); loadStats();
+  });
+}
+
+function diffTypeBadge(t) {
+  const map = {
+    match: ['账实相符', 'badge-green'],
+    borrowed_occupied: ['借出占用(正常)', 'badge-blue'],
+    loss: ['盘亏异常', 'badge-red'],
+    overage: ['盘盈异常', 'badge-orange']
+  };
+  const [txt, cls] = map[t] || [t, 'badge-gray'];
+  return `<span class="badge ${cls}">${txt}</span>`;
+}
+
+function viewInventoryDetail(id) {
+  CURRENT_INV_ID = id;
+  ajax('GET', '/api/inventory', null, (err1, list) => {
+    if (err1) return;
+    const batch = list.find(b => b.id === id);
+    if (!batch) return;
+    document.getElementById('invDetailTitle').textContent = `盘点明细 - ${batch.name} (${batch.batch_no})`;
+    document.getElementById('invSummary').innerHTML = `
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px;">
+        <div><b>状态:</b> ${invStatusBadge(batch.status)}</div>
+        <div><b>操作人:</b> ${batch.operator_name || '-'}</div>
+        <div><b>资产数:</b> ${batch.total_assets}</div>
+        <div><b>账面:</b> <strong style="color:#1890ff;">${batch.total_qty_book}</strong></div>
+        <div><b>实盘:</b> <strong style="color:#52c41a;">${batch.total_qty_actual}</strong></div>
+        <div><b>借出占用:</b> <strong style="color:#722ed1;">${batch.total_qty_borrowed}</strong></div>
+        <div><b>净差异:</b> <strong style="color:${batch.total_diff===0?'#52c41a':'#ff4d4f'};">${batch.total_diff>0?'+':''}${batch.total_diff}</strong></div>
+        ${batch.remark ? `<div><b>备注:</b> ${batch.remark}</div>` : ''}
+        ${batch.started_at ? `<div><b>启动时间:</b> ${fmtDate(batch.started_at)}</div>` : ''}
+        ${batch.completed_at ? `<div><b>完成时间:</b> ${fmtDate(batch.completed_at)}</div>` : ''}
+      </div>
+    `;
+    document.getElementById('invStartBtn').style.display = (batch.status === 'draft') ? 'inline-block' : 'none';
+    document.getElementById('invCompleteBtn').style.display = (batch.status === 'in_progress') ? 'inline-block' : 'none';
+
+    ajax('GET', `/api/inventory/${id}/items`, null, (err, items) => {
+      if (err) { document.getElementById('invItemTbody').innerHTML = '<tr><td colspan="12" class="empty">加载失败</td></tr>'; return; }
+      INV_ITEMS_CACHE = items;
+      const editable = batch.status !== 'completed';
+      if (!items.length) { document.getElementById('invItemTbody').innerHTML = '<tr><td colspan="12" class="empty">无明细</td></tr>'; openModal('inventoryDetailModal'); return; }
+      document.getElementById('invItemTbody').innerHTML = items.map(it => {
+        const expected = it.qty_book - it.qty_borrowed;
+        return `
+          <tr>
+            <td>#${it.id}</td>
+            <td><b>${it.asset_code}</b></td>
+            <td>${it.asset_name}</td>
+            <td>${it.qty_book}</td>
+            <td style="color:#722ed1;">${it.qty_borrowed}</td>
+            <td style="color:#1890ff;font-weight:600;">${expected}</td>
+            <td>
+              <input type="number" min="0" class="diff-input" id="inv_qty_${it.id}" value="${it.qty_actual}"
+                ${!editable?'disabled style="opacity:0.7;"':''} onchange="onInvItemChange(${it.id})">
+            </td>
+            <td style="color:${it.qty_diff===0?'#52c41a':'#ff4d4f'};font-weight:600;">${it.qty_diff>0?'+':''}${it.qty_diff}</td>
+            <td>${diffTypeBadge(it.diff_type)}</td>
+            <td>
+              <input type="text" class="diff-input" style="width:130px;" id="inv_reason_${it.id}" value="${it.diff_reason||''}"
+                ${!editable?'disabled style="opacity:0.7;"':''} onchange="onInvItemChange(${it.id})">
+            </td>
+            <td>
+              <input type="text" class="diff-input" style="width:130px;" id="inv_handle_${it.id}" value="${it.handle_result||''}"
+                ${!editable?'disabled style="opacity:0.7;"':''} onchange="onInvItemChange(${it.id})">
+            </td>
+          </tr>
+        `;
+      }).join('');
+      openModal('inventoryDetailModal');
+    });
+  });
+}
+function onInvItemChange(itemId) {
+  const qtyActual = parseInt(document.getElementById(`inv_qty_${itemId}`).value) || 0;
+  const diffReason = document.getElementById(`inv_reason_${itemId}`).value;
+  const handleResult = document.getElementById(`inv_handle_${itemId}`).value;
+  ajax('PUT', `/api/inventory/${CURRENT_INV_ID}/items/${itemId}`, {
+    qty_actual: qtyActual,
+    diff_reason: diffReason,
+    handle_result: handleResult
+  }, (err) => {
+    if (err) { alert('保存失败: ' + errMsg(err)); return; }
+  });
+}
+function startInventory() {
+  if (!confirm('确认启动盘点? 启动后可开始录入实盘数量。')) return;
+  ajax('POST', `/api/inventory/${CURRENT_INV_ID}/start`, null, (err) => {
+    if (err) { alert(errMsg(err)); return; }
+    viewInventoryDetail(CURRENT_INV_ID); loadInventory(); loadStats();
+  });
+}
+function completeInventory() {
+  if (!confirm('确认完成盘点? 完成后不可再修改数据。')) return;
+  ajax('POST', `/api/inventory/${CURRENT_INV_ID}/complete`, null, (err) => {
+    if (err) { alert(errMsg(err)); return; }
+    viewInventoryDetail(CURRENT_INV_ID); loadInventory(); loadStats();
+  });
+}
+
 // Export
 function exportLedger() {
   window.open(API + '/api/export/ledger', '_blank');
+}
+function reloadAll() {
+  loadStats(); loadAssets(); loadBorrow(); loadReservations(); loadRequests(); loadAuditLogs(); loadInventory();
 }
 
 // Init
@@ -660,8 +1222,11 @@ loadStats();
 loadAssets();
 loadUsers();
 loadBorrow();
+loadReservations();
 loadRequests();
-setInterval(() => { loadStats(); loadAssets(); loadBorrow(); loadRequests(); }, 30000);
+loadAuditLogs();
+loadInventory();
+setInterval(() => { loadStats(); loadAssets(); loadBorrow(); loadReservations(); loadRequests(); loadAuditLogs(); loadInventory(); }, 30000);
 </script>
 </body>
 </html>
