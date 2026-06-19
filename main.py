@@ -498,6 +498,30 @@ def recalc_queue_positions(db: Session, asset_id: int):
         r.queue_position = idx + 1
 
 
+def get_reserved_quantity(db: Session, asset_id: int, exclude_reservation_id: Optional[int] = None) -> int:
+    """统计某资产 pending_confirm + confirmed 状态预约的总占用件数，用于库存预留。"""
+    q = db.query(Reservation).filter(
+        Reservation.asset_id == asset_id,
+        Reservation.status.in_([ReservationStatus.PENDING_CONFIRM, ReservationStatus.CONFIRMED])
+    )
+    if exclude_reservation_id is not None:
+        q = q.filter(Reservation.id != exclude_reservation_id)
+    reserved = q.all()
+    return sum(r.quantity for r in reserved)
+
+
+def get_effective_available_for_borrow(db: Session, asset_id: int, for_reservation_id: Optional[int] = None) -> int:
+    """计算"有效可借库存" = 物理可用 - （待确认+已确认预约总占用 - 当前预约自身占用）
+    - 普通借出: for_reservation_id=None → 扣除所有已预留的
+    - 通过预约借出: for_reservation_id=id → 把自己的占用加回来
+    """
+    asset = db.query(Asset).filter(Asset.id == asset_id).first()
+    if not asset:
+        return 0
+    reserved = get_reserved_quantity(db, asset_id, exclude_reservation_id=for_reservation_id)
+    return asset.available_quantity - reserved
+
+
 def process_timeout_reservations(db: Session):
     now = datetime.now()
     pending = db.query(Reservation).filter(
@@ -537,7 +561,9 @@ def _advance_without_timeout_check(db: Session, asset_id: int):
     asset = db.query(Asset).filter(Asset.id == asset_id).first()
     if not asset or asset.status == AssetStatus.SCRAPPED:
         return
-    available = asset.available_quantity
+    # 关键修复: 推进队列时只能分配"尚未被待确认/已确认预约占用"的净库存
+    already_reserved = get_reserved_quantity(db, asset_id)
+    available = asset.available_quantity - already_reserved
     if available <= 0:
         return
     queued = db.query(Reservation).filter(
@@ -742,7 +768,6 @@ def borrow_asset(data: BorrowCreate, db: Session = Depends(get_db), user: User =
         raise build_error("ASSET_SCRAPPED", "已报废资产无法借出", "asset_id")
 
     reservation = None
-    effective_available = asset.available_quantity
     if data.reservation_id:
         reservation = db.query(Reservation).filter(Reservation.id == data.reservation_id).first()
         if not reservation:
@@ -753,14 +778,32 @@ def borrow_asset(data: BorrowCreate, db: Session = Depends(get_db), user: User =
             raise build_error("RESERVATION_USER_MISMATCH", "预约人与借用人不一致", "borrower_id")
         if reservation.quantity < data.quantity:
             raise build_error("RESERVATION_QTY_INSUFFICIENT", f"预约数量不足，预约 {reservation.quantity} 件，请求 {data.quantity} 件", "quantity")
-        effective_available += reservation.quantity
+
+    # 关键修复: 统一使用 get_effective_available_for_borrow 计算有效库存
+    # - 普通借出: 自动扣除所有 pending_confirm + confirmed 预约的占用
+    # - 预约借出 (带 reservation_id): 自动把自己的预约占用加回来
+    effective_available = get_effective_available_for_borrow(db, asset.id, for_reservation_id=data.reservation_id)
+    reserved_total = get_reserved_quantity(db, asset.id, exclude_reservation_id=data.reservation_id)
 
     if effective_available < data.quantity:
+        detail_payload = {
+            "requested": data.quantity,
+            "available": effective_available,
+            "physical_available": asset.available_quantity,
+            "reserved_by_others": reserved_total
+        }
+        if not data.reservation_id and reserved_total > 0:
+            raise build_error(
+                "STOCK_RESERVED",
+                f"库存已被预约占用: 物理库存 {asset.available_quantity} 件，已被预约预留 {reserved_total} 件，您可借 {effective_available} 件 (建议先发起预约排队)",
+                "quantity",
+                detail_payload
+            )
         raise build_error(
             "INSUFFICIENT_STOCK",
-            f"库存不足: 需要 {data.quantity} 件, 可用 {asset.available_quantity} 件",
+            f"库存不足: 需要 {data.quantity} 件, 实际可借 {effective_available} 件 (物理可用 {asset.available_quantity}, 预约预留 {reserved_total})",
             "quantity",
-            {"requested": data.quantity, "available": asset.available_quantity}
+            detail_payload
         )
 
     active_record = db.query(BorrowRecord).filter(
@@ -1350,11 +1393,14 @@ def confirm_reservation(reservation_id: int, db: Session = Depends(get_db), user
     requester = db.query(User).filter(User.id == res.requester_id).first()
 
     if res.status == ReservationStatus.QUEUED:
-        if asset.available_quantity < res.quantity:
+        effective = get_effective_available_for_borrow(db, asset.id)
+        reserved = get_reserved_quantity(db, asset.id)
+        if effective < res.quantity:
             raise build_error(
                 "INSUFFICIENT_STOCK",
-                f"库存不足: 需要 {res.quantity} 件, 可用 {asset.available_quantity} 件",
-                "quantity"
+                f"库存不足: 需要 {res.quantity} 件, 实际可借 {effective} 件 (物理可用 {asset.available_quantity}, 已被预约预留 {reserved})",
+                "quantity",
+                {"requested": res.quantity, "available": effective, "physical_available": asset.available_quantity, "reserved_by_others": reserved}
             )
 
     old_status = res.status

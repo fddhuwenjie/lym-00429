@@ -205,6 +205,141 @@ def run():
 
     print("\n✅ 验收标准3通过: 超时未确认自动释放给下一位，并记录审计日志")
 
+    # ========== 库存预留专项测试 (用户新增需求) ==========
+    section("库存预留专项测试 (待确认/已确认 库存锁定)")
+
+    substep("R1", "创建新资产 R-RESV 仅1件 (用于纯净测试)")
+    resp = client.post('/api/assets', json={
+        'asset_code': 'R-RESV', 'name': '预留测试资产',
+        'category': '测试专用', 'total_quantity': 1, 'location': '测试区'
+    })
+    assert resp.status_code == 200, resp.text
+    asset_r = resp.json()
+    asset_r_id = asset_r['id']
+    ok(f"R-RESV 创建成功, 物理库存={asset_r['available_quantity']}")
+
+    substep("R2", "张三发起预约(有库存) → 直接进入 pending_confirm，库存被逻辑锁定")
+    resp = client.post('/api/reservations', json={
+        'asset_id': asset_r_id, 'requester_id': zhangsan['id'],
+        'quantity': 1, 'purpose': '库存预留测试-张三'
+    })
+    assert resp.status_code == 200, resp.text
+    res_zs = resp.json()
+    assert res_zs['status'] == 'pending_confirm', f"应为 pending_confirm, 实际 {res_zs['status']}"
+    assert res_zs['queue_position'] == 1
+    ok(f"张三预约#{res_zs['id']} → pending_confirm, position={res_zs['queue_position']}")
+
+    substep("R3", "物理库存仍显示 1，但李四不带预约单借出 → 被拒 (STOCK_RESERVED)")
+    due = (datetime.now() + timedelta(days=2)).isoformat()
+    resp = client.post('/api/borrow', json={
+        'asset_id': asset_r_id, 'borrower_id': lisi['id'],
+        'quantity': 1, 'due_date': due, 'purpose': '第三人抢借测试'
+    })
+    assert resp.status_code == 400, f"应为 400, 实际 {resp.status_code}"
+    err = resp.json()['detail']
+    assert err['code'] in ['STOCK_RESERVED', 'INSUFFICIENT_STOCK'], f"错误码不正确: {err['code']}"
+    # 错误 payload 中应有预留信息
+    assert 'reserved_by_others' in err.get('details', {}), f"错误信息中应包含 reserved_by_others, 实际 detail={err}"
+    ok(f"正确拒绝李四，错误码={err['code']}，他人已预留={err['details']['reserved_by_others']}")
+
+    substep("R4", "王五也来排队 → 进入 queued position=2")
+    resp = client.post('/api/reservations', json={
+        'asset_id': asset_r_id, 'requester_id': wangwu_id,
+        'quantity': 1, 'purpose': '库存预留测试-王五'
+    })
+    assert resp.status_code == 200, resp.text
+    res_ww = resp.json()
+    assert res_ww['status'] == 'queued'
+    assert res_ww['queue_position'] == 2, f"应为 position=2"
+    ok(f"王五预约#{res_ww['id']} → queued@{res_ww['queue_position']}")
+
+    substep("R5", "张三使用 reservation_id 正常借出 → 成功，预约变 borrowed")
+    resp = client.post('/api/borrow', json={
+        'asset_id': asset_r_id, 'borrower_id': zhangsan['id'],
+        'quantity': 1, 'due_date': due,
+        'purpose': '张三正常预约借出',
+        'reservation_id': res_zs['id']
+    })
+    assert resp.status_code == 200, resp.text
+    borrow_r_zs = resp.json()
+    # 检查预约状态
+    resp = client.get('/api/reservations', params={'id': res_zs['id']})
+    assert resp.status_code == 200
+    res_zs_after = [r for r in resp.json() if r['id'] == res_zs['id']][0]
+    assert res_zs_after['status'] == 'borrowed'
+    ok(f"张三用预约单借出成功，预约状态={res_zs_after['status']}，借用单#{borrow_r_zs['id']}")
+
+    substep("R6", "张三归还 → 王五自动进入 pending_confirm")
+    resp = client.post(f'/api/borrow/{borrow_r_zs["id"]}/return')
+    assert resp.status_code == 200
+    resp = client.get('/api/reservations', params={'asset_id': asset_r_id})
+    rs = resp.json()
+    ww_status = [r for r in rs if r['requester_name'] == '王五'][0]['status']
+    assert ww_status == 'pending_confirm', f"王五应自动进入待确认，实际 {ww_status}"
+    ok(f"张三归还 → 王五进入 {ww_status}")
+
+    substep("R7", "李四此时还是借不到（王五已锁定）")
+    resp = client.post('/api/borrow', json={
+        'asset_id': asset_r_id, 'borrower_id': lisi['id'],
+        'quantity': 1, 'due_date': due, 'purpose': '李四再次抢借'
+    })
+    assert resp.status_code == 400
+    err = resp.json()['detail']
+    assert err['code'] in ['STOCK_RESERVED', 'INSUFFICIENT_STOCK']
+    ok(f"李四再次被拒 (王五锁定库存)，错误码={err['code']}")
+
+    substep("R8", "王五取消预约 → 库存自动释放（此时无其他排队中预约）")
+    resp = client.post(f'/api/reservations/{res_ww["id"]}/cancel')
+    assert resp.status_code == 200
+    res_cancel = resp.json()
+    assert res_cancel['status'] == 'cancelled'
+    # 检查库存
+    resp = client.get(f'/api/assets/{asset_r_id}')
+    avail = resp.json()['asset']['available_quantity']
+    assert avail == 1, f"库存应为1，实际 {avail}"
+    ok(f"王五取消 → 库存完全释放 (available={avail})")
+
+    substep("R9", "库存释放后 李四 现在可以正常借出（不带预约单）→ 成功")
+    resp = client.post('/api/borrow', json={
+        'asset_id': asset_r_id, 'borrower_id': lisi['id'],
+        'quantity': 1, 'due_date': due, 'purpose': '李四无预约正常借'
+    })
+    assert resp.status_code == 200, f"应为 200, 实际 {resp.status_code}: {resp.text[:200]}"
+    ok(f"库存释放后李四顺利借出成功 #{resp.json()['id']}")
+
+    substep("R10", "再测一遍『超时时库存正确释放并给下一位』 (与验收3联动)")
+    # 先让李四归还，创建 2 个干净的预约
+    client.post(f'/api/borrow/{resp.json()["id"]}/return')
+    # 张三先预约
+    r1 = client.post('/api/reservations', json={
+        'asset_id': asset_r_id, 'requester_id': zhangsan['id'],
+        'quantity': 1, 'purpose': '超时释放测试1'
+    }).json()
+    # 王五后预约
+    r2 = client.post('/api/reservations', json={
+        'asset_id': asset_r_id, 'requester_id': wangwu_id,
+        'quantity': 1, 'purpose': '超时释放测试2'
+    }).json()
+    assert r1['status'] == 'pending_confirm'
+    assert r2['status'] == 'queued' and r2['queue_position'] == 2
+    # 手动把张三的 confirm_deadline 设为过去
+    db = SessionLocal()
+    r1_db = db.query(Reservation).filter(Reservation.id == r1['id']).first()
+    r1_db.confirm_deadline = datetime.now() - timedelta(minutes=1)
+    db.commit()
+    db.close()
+    # 触发超时检测
+    resp = client.get('/api/reservations', params={'asset_id': asset_r_id})
+    rs_by_id = {r['id']: r for r in resp.json()}
+    assert rs_by_id[r1['id']]['status'] == 'timeout_released', f"张三(r1)应超时释放，实际 {rs_by_id[r1['id']]['status']}"
+    assert rs_by_id[r2['id']]['status'] == 'pending_confirm', f"王五(r2)应获得库存，实际 {rs_by_id[r2['id']]['status']}"
+    ok(f"张三超时→timeout_released，王五自动获得→pending_confirm")
+
+    # 清理：取消王五的预约让后续测试不受影响
+    client.post(f'/api/reservations/{r2["id"]}/cancel')
+
+    print("\n✅ 库存预留专项测试通过: 待确认/已确认期间库存被锁定，取消或超时后正确释放并传递给下一位")
+
     # ========== 验收标准4: 所有关键操作都有审计日志 ==========
     section("验收标准 4: 所有关键操作都有审计日志")
 
